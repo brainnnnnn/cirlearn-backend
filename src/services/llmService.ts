@@ -54,7 +54,16 @@ function resolveBaseURL(baseURL: string | undefined, apiKey: string): string {
 }
 
 async function callOpenAICompatible(options: LLMCallOptions & { baseURL: string }): Promise<Response> {
-  const { apiKey, model, messages, temperature, stream, maxTokens, timeout, baseURL } = options;
+  const {
+    apiKey,
+    model,
+    messages,
+    temperature,
+    stream,
+    maxTokens,
+    timeout = 180_000,
+    baseURL,
+  } = options;
   const url = `${baseURL.replace(/\/$/, '')}/chat/completions`;
 
   const body: Record<string, unknown> = {
@@ -79,7 +88,7 @@ async function callOpenAICompatible(options: LLMCallOptions & { baseURL: string 
 }
 
 async function callAnthropic(options: LLMCallOptions): Promise<Response> {
-  const { apiKey, model, messages, temperature, stream, maxTokens, timeout } = options;
+  const { apiKey, model, messages, temperature, stream, maxTokens, timeout = 180_000 } = options;
   const systemMessage = messages.find(m => m.role === 'system')?.content;
   const userMessages = messages.filter(m => m.role !== 'system');
 
@@ -105,7 +114,7 @@ async function callAnthropic(options: LLMCallOptions): Promise<Response> {
 }
 
 async function callGoogleOpenAI(options: LLMCallOptions, baseURL: string): Promise<Response> {
-  const { apiKey, model, messages, temperature, stream, maxTokens, timeout } = options;
+  const { apiKey, model, messages, temperature, stream, maxTokens, timeout = 180_000 } = options;
   const url = `${baseURL.replace(/\/$/, '')}/chat/completions`;
 
   const body: Record<string, unknown> = {
