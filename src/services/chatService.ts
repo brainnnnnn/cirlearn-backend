@@ -1,4 +1,4 @@
-import { ChatRequest, Subject } from '../types';
+import { ChatRequest, Subject, QuestionType } from '../types';
 import { detectSubject } from '../lib/subjectDetector';
 import { MATH_SYSTEM_PROMPT, CHINESE_SYSTEM_PROMPT, ENGLISH_SYSTEM_PROMPT } from '../lib/prompts/prompts';
 import { callLLM } from './llmService';
@@ -22,9 +22,18 @@ export function getSystemPrompt(subject: Subject): string {
 }
 
 export async function streamChat(request: ChatRequest): Promise<Response> {
-  const { messages, model, apiKey, baseURL, subjectOverride } = request;
+  const { messages, model, apiKey, baseURL, subjectOverride, intentName, questionType } = request;
   const subject = subjectOverride ?? detectSubject(messages);
-  const systemPrompt = getSystemPrompt(subject);
+  let systemPrompt = getSystemPrompt(subject);
+
+  // Append intent and question type context for math to enforce fixed component mapping
+  if (subject === 'math' && intentName) {
+    systemPrompt += `\n\n【当前意图与题型】\n当前用户点击的意图是：${intentName}`;
+    if (questionType?.type_all) {
+      systemPrompt += `\n题型（questionType.type_all）：${questionType.type_all}`;
+    }
+    systemPrompt += '\n请严格按照上述固定组件搭配输出，禁止自由组合。';
+  }
 
   const isAnthropic = !baseURL && apiKey.startsWith('sk-ant-');
   const isGoogle = !baseURL && apiKey.startsWith('AIza');

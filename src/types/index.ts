@@ -1,6 +1,12 @@
 export type Subject = 'math' | 'chinese' | 'english';
 export type Provider = 'kimi' | 'gpt4v';
 
+export interface QuestionType {
+  type: number;
+  type_16: string;
+  type_all: string;
+}
+
 export interface IntentData {
   name: string;
   description: string;
@@ -9,6 +15,8 @@ export interface IntentData {
   visualDescription: string;
   pageContext: string;
   subject: Subject;
+  questionType?: QuestionType;
+  knowledgePoint?: string;
 }
 
 export interface VLMData {
@@ -44,6 +52,8 @@ export interface ChatRequest {
   apiKey: string;
   baseURL?: string;
   subjectOverride?: Subject;
+  intentName?: string;
+  questionType?: QuestionType;
 }
 
 export interface StreamChunk {

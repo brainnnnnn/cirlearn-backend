@@ -204,7 +204,7 @@ export function parseModelContent(content: string): VLMData {
   const intents: IntentData[] = rawIntents.map((item: unknown) => {
     const i = (item ?? {}) as Record<string, unknown>;
     const subject = VALID_SUBJECTS.has(i.subject as string) ? (i.subject as Subject) : 'chinese';
-    return {
+    const intent: IntentData = {
       name: typeof i.name === 'string' ? i.name : '解答',
       description: typeof i.description === 'string' ? i.description : '',
       confidence: typeof i.confidence === 'number' ? Math.min(1, Math.max(0, i.confidence)) : 0.5,
@@ -213,6 +213,23 @@ export function parseModelContent(content: string): VLMData {
       pageContext: typeof i.pageContext === 'string' ? i.pageContext : '',
       subject,
     };
+
+    // Parse optional questionType for math question intents
+    const qt = i.questionType as Record<string, unknown> | undefined;
+    if (qt && typeof qt.type === 'number' && typeof qt.type_16 === 'string' && typeof qt.type_all === 'string') {
+      intent.questionType = {
+        type: qt.type,
+        type_16: qt.type_16,
+        type_all: qt.type_all,
+      };
+    }
+
+    // Parse optional knowledgePoint for 查知识点 intent
+    if (typeof i.knowledgePoint === 'string' && i.knowledgePoint) {
+      intent.knowledgePoint = i.knowledgePoint;
+    }
+
+    return intent;
   });
 
   if (intents.length === 0) {
